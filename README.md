@@ -1,5 +1,21 @@
 # AI Agents — Final Project
 
+## Study Planner Agent
+
+This Week 11 prototype answers study-planning questions and drafts study blocks from the deadlines, workload, and available time entered on the command line. The project targets Level C. See the [proposal](reports/proposal.md) for the two planned tools and evaluation cases.
+
+Install [Ollama](https://ollama.com/download) and use Node.js 22 or later. Start Ollama, then run these commands from the repository root.
+
+```sh
+ollama pull qwen3:4b
+node src/cli.mjs "Saya punya 90 menit malam ini. Bagaimana membaginya untuk membaca catatan AI (30 menit) dan mengerjakan latihan (60 menit)?"
+node --test
+```
+
+To change the model or endpoint, copy `.env.example` to `.env`, edit it, and run `node --env-file=.env src/cli.mjs "Your study question"`. The automated tests use a simulated Ollama server. Run the example separately to check your actual model.
+
+Codex assisted with the proposal, initial CLI, model adapter, and tests.
+
 **CSS 4007 — Artificial Intelligence · Individual project · Your choice of topic**
 
 **Start: 2 November 2026. Final deadline: 22 December 2026, 23:59 (Asia/Oral, UTC+05:00).**
