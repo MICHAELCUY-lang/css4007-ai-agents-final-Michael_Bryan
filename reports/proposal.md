@@ -67,6 +67,8 @@ flowchart TD
 
 Use fixed local data to test assignment lookup, capacity totals, a plan using both tools, a general question without tools, invalid dates, unknown dates, over-capacity work, and model or tool failure. Use simulated responses for repeatable application tests and then run the example requests with the actual model. Compare dates and totals with the fixture, verify the tool trace, and record mismatches and latency.
 
+For each live example, record whether the model chose the expected tools and whether its final answer used the returned data correctly. Include a general study question with both tools available and an expected call count of zero. This evaluation design draws on [ToolFailBench](paper-selection.md).
+
 ## Weekly Milestones
 
 | Week | Planned work |
@@ -82,4 +84,4 @@ Use fixed local data to test assignment lookup, capacity totals, a plan using bo
 
 ## AI Assistance
 
-Codex assisted with drafting this proposal and implementing and testing the initial prototype.
+Codex assisted with drafting this proposal, implementing and testing the initial prototype, and identifying a paper to inform tool-use evaluation.
