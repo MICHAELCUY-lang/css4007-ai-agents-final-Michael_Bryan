@@ -2,6 +2,8 @@
 
 Both JSON files contain synthetic demonstration records, not a history of real assignments or completed work.
 
+The same files supply the Week 13 agent's read-only tools. Their `start_date` and `end_date` declare assignment coverage; missing availability records remain unknown inside or outside that window.
+
 - `week-12.json`: 210 minutes of assignments and 210 known available minutes. All work can fit on or before its deadline.
 - `over-capacity.json`: 150 minutes of assignments, 30 available minutes on November 22, zero on November 23, and unknown availability on November 24. At least 120 minutes must remain unscheduled.
 

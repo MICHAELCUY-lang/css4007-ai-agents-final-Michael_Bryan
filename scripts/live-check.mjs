@@ -1,8 +1,9 @@
 import {mkdir, readFile, writeFile} from 'node:fs/promises';
 import {createStudyPlan, planStudy} from '../src/study-planner.mjs';
+import {defaultModel} from '../src/model-client.mjs';
 
 const baseUrl = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
-const model = process.env.LLM_MODEL || 'qwen3:4b';
+const model = process.env.LLM_MODEL || defaultModel;
 const evidence = {checked_at: new Date().toISOString(), model, results: []};
 try {
   const response = await fetch(new URL('/api/version', baseUrl), {signal: AbortSignal.timeout(5_000)});

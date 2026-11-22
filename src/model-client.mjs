@@ -1,6 +1,8 @@
+export const defaultModel = 'qwen3:0.6b';
+
 export function createModelClient({
   baseUrl = process.env.OLLAMA_URL || 'http://127.0.0.1:11434',
-  model = process.env.LLM_MODEL || 'qwen3:4b',
+  model = process.env.LLM_MODEL || defaultModel,
   timeoutMs = 120_000,
 } = {}) {
   return async function complete(messages, tools = [], {format, temperature} = {}) {

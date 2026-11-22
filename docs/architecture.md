@@ -1,4 +1,6 @@
-# Study Planner: Week 12 architecture
+# Study Planner architecture
+
+## Structured scheduling (Week 12)
 
 The current application has two paths. A normal text question gets a free-text model answer. A `--plan` request loads structured data, asks the model to rank assignments, and allocates sessions in application code. Earlier deadlines take precedence; the model's ranking chooses between assignments with the same deadline.
 
@@ -33,4 +35,20 @@ JSON schema constrains the model's output to an array of supplied task IDs. Java
 
 Initial live tests asked the small model to generate session dates and minutes. It underallocated a 90-minute assignment and proposed work after its deadline. The recorded initial results led to the priority-list design. The final live examples check 210 scheduled minutes in the normal case and 30 scheduled/120 remaining minutes in the constrained case. These examples do not assess the semantic quality of every priority ranking or free-text study answer.
 
-Week 13 will add model-selected `list_assignments` and `get_study_capacity` calls. In Week 12, loading a JSON file is controlled by the CLI. It is not evidence that the LLM selected a tool. Tool definitions, result messages, execution logs, and failure handling remain the next milestone.
+## Tool integration (Week 13)
+
+`--agent` uses `src/study-agent.mjs` and `src/study-tools.mjs` to select and execute tools through Ollama's native tool-calling protocol. The separate `--plan` command still loads its file directly. See the [tool integration guide](tool-integration.md) for definitions, traces, limits, and examples.
+
+```mermaid
+flowchart TD
+    A[User request] --> B[LLM with two registered tools]
+    B -->|No tool needed| G[Answer]
+    B -->|Model-selected calls| C[Validate tool name and date arguments]
+    C --> D[Read one local-data snapshot]
+    D --> E[Real data or structured error]
+    E --> F[Append tool messages and record events]
+    F --> B
+    G --> H[Add exact tool facts and unknown-data notes]
+```
+
+The application does not choose tools by matching request keywords or call the tools in a fixed sequence. It executes the model's returned `tool_calls`. A five-round/eight-call budget prevents indefinite repetition. This is a bounded C-level tool-calling workflow, without claiming the autonomous planning or research requirements of Level A.

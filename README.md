@@ -2,22 +2,32 @@
 
 ## Study Planner Agent
 
-The Week 12 application answers study questions and generates schedules from assignment deadlines, workload estimates, and daily availability. The AI proposes task priorities; the program allocates study sessions, checks the constraints, and calculates unfinished work. Earlier deadlines take precedence, and AI priority breaks ties. The project targets Level C; model-selected tools are the next milestone. See the [proposal](reports/proposal.md).
+The Week 13 application adds LLM-selected assignment and study-capacity tools. In `--agent` mode, the model chooses either tool, both tools, or no tools; the program executes the chosen calls and returns their actual results to the model. The separate `--plan` mode creates validated schedules from a JSON file. The project targets Level C. See the [proposal](reports/proposal.md) and [tool integration guide](docs/tool-integration.md).
 
 Install [Ollama](https://ollama.com/download) and use Node.js 22 or later. Start Ollama, then run these commands from the repository root.
 
 ```sh
-ollama pull qwen3:4b
+ollama pull qwen3:0.6b
 node src/cli.mjs "Saya punya 90 menit malam ini. Bagaimana membaginya untuk membaca catatan AI (30 menit) dan mengerjakan latihan (60 menit)?"
 node src/cli.mjs --check data/week-12.json
 node src/cli.mjs --plan data/week-12.json
 node src/cli.mjs --plan data/over-capacity.json --json
+node src/cli.mjs --agent "Which assignments are due from 2026-11-22 to 2026-11-24?"
+node src/cli.mjs --agent "Bandingkan total beban tugas dan waktu belajar tersedia dari 2026-11-22 sampai 2026-11-24."
 node --test
 ```
 
 On this Windows checkout, `./scripts/start-ollama.ps1` also supports a standalone Ollama binary in `.private/ollama/ollama.exe`; it starts the server in the background and keeps models in `.private/models`. Use the installed `ollama` command on other computers. The portable binaries and models are ignored by Git and are not included when cloning the repository.
 
-To change the model or endpoint, copy `.env.example` to `.env`, edit it, and run `node --env-file=.env src/cli.mjs "Your study question"`. For a smaller download, pull `qwen3:0.6b` and set `LLM_MODEL=qwen3:0.6b` in `.env`; include `--env-file=.env` when running either the CLI or live-check script. The default remains `qwen3:4b`.
+The tested default model is `qwen3:0.6b`. To change the model or endpoint, copy `.env.example` to `.env`, edit it, and run `node --env-file=.env src/cli.mjs "Your study question"`. A larger model such as `qwen3:4b` can be selected after pulling it; it has not been verified in the recorded Week 13 run.
+
+### Tool integration
+
+`--agent` registers `list_assignments(start_date, end_date)` and `get_study_capacity(start_date, end_date)` with the model. Dates are inclusive and limited to a 31-day range. Tools read one validated local-data snapshot per request. Supply another file with `--data data/over-capacity.json`. The file uses the same schema as the schedule examples.
+
+The model receives the real tool result or an error. Human-readable output also includes exact tool facts, and missing-data notes are added even when the model omits them. The model's prose can paraphrase titles or make other mistakes; the displayed tool records remain the source of truth. Use `--plan` for validated session dates and minutes.
+
+Each agent request writes observable execution events to `.private/traces/<unique-id>.jsonl`. These files are ignored by Git. Use `--trace path/to/new-file.jsonl` to choose a path or `--json` to inspect the answer and events together. Existing log files are not overwritten. Logs contain selected tool arguments and data results, without model reasoning or raw request text. Export only synthetic or approved data when sharing a trace.
 
 ### Structured schedules
 
@@ -29,7 +39,7 @@ The [example data](data/README.md) is synthetic. Edit the JSON to enter your own
 
 `node --test` runs repeatable application tests with simulated model responses, plus the inherited starter tests. For real-model evidence, start Ollama, pull the model, then run `node scripts/live-check.mjs` (or `node --env-file=.env scripts/live-check.mjs`). This checks one general question for a nonempty answer and both schedule examples against expected totals. It writes actual outputs, validation results, model name, server version, and timings to `reports/evidence/week-12-live.json`, replacing that file on each run. The Week 12 live run used `qwen3:0.6b`; the default 4B model was not tested in that run. The [initial live failures](reports/evidence/week-12-live-initial.json) explain why session allocation moved into application code.
 
-The actual implementation date and results are recorded in [Week 12](reports/week-12.md). See [the current architecture](docs/architecture.md) for the request flow, file responsibilities, and scheduling examples. Codex assisted with the proposal, CLI, model adapter, schedule validation, example data, tests, and documentation.
+For Week 13 tool-selection checks, run `node scripts/live-tools-check.mjs` (add `--env-file=.env` before the script path when using overrides). The recorded run covers each tool alone, both tools in English and Indonesian, no tools for general advice, and missing availability. See [Week 13](reports/week-13.md), [test output](reports/evidence/week-13-tests.txt), and [live traces](reports/evidence/week-13-live-tools.json). The earlier schedule results remain in [Week 12](reports/week-12.md). [Architecture notes](docs/architecture.md) describe both command paths. Codex assisted with the proposal, CLI, model adapter, tools, validation, examples, tests, and documentation.
 
 **CSS 4007 — Artificial Intelligence · Individual project · Your choice of topic**
 

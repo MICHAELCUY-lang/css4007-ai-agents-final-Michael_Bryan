@@ -46,6 +46,8 @@ Use Qwen3 4B through Ollama's local chat API. Qwen3 supports tool calling, and t
 
 Week 12 update (November 22): the live checks used `qwen3:0.6b` because the 4B download repeatedly stalled. The 4B model remains configurable but was not tested in this milestone.
 
+Week 13 implementation update (prepared November 22): `qwen3:0.6b` is now the tested default for native tool selection. The 4B model remains an optional configuration for later evaluation.
+
 ## Architecture
 
 ```mermaid
@@ -59,6 +61,8 @@ flowchart TD
 ```
 
 Week 12 implementation: the model returns a validated assignment priority list. Application code allocates sessions by earliest deadline, uses model priority for tied deadlines, and validates the resulting dates and minute totals. Initial live failures with model-generated sessions motivated this change. Registering and executing model-selected data tools remains Week 13 work.
+
+Week 13 implementation: `--agent` registers both data tools, executes the model's native tool calls, returns real data or errors in tool messages, and records execution logs. The model can answer without tools. The separate `--plan` path continues to provide strict schedule validation.
 
 ## Example Requests
 

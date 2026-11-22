@@ -28,7 +28,7 @@ for ($attempt = 0; $attempt -lt 20; $attempt++) {
     try {
         $version = Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/version' -TimeoutSec 1
         Write-Output "Started Ollama $($version.version) on http://127.0.0.1:11434 (PID $($serverProcess.Id))."
-        Write-Output "Pull the model: & '$ollamaExecutable' pull qwen3:4b"
+        Write-Output "Pull the model: & '$ollamaExecutable' pull qwen3:0.6b"
         exit 0
     } catch {}
 }
