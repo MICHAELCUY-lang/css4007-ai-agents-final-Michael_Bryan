@@ -1,0 +1,12 @@
+{
+  "start_date": "2026-11-22",
+  "end_date": "2026-11-24",
+  "assignments": [
+    {"id": "ai-report", "title": "AI report", "course": "CSS4007", "deadline": "2026-11-22", "estimated_minutes": 90},
+    {"id": "reading", "title": "Read course notes", "course": "CSS4007", "deadline": "2026-11-24", "estimated_minutes": 60}
+  ],
+  "availability": [
+    {"date": "2026-11-22", "minutes": 30},
+    {"date": "2026-11-23", "minutes": 0}
+  ]
+}

@@ -15,17 +15,19 @@ async function serveChat(t, reply) {
       method: request.method,
       body: JSON.parse(Buffer.concat(chunks).toString()),
     });
+    if (reply.delayMs) await new Promise(resolve => setTimeout(resolve, reply.delayMs));
     response.writeHead(reply.status ?? 200, {'Content-Type': 'application/json'});
     response.end(reply.body);
   });
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   t.after(() => new Promise(resolve => server.close(resolve)));
+  const baseUrl = `http://127.0.0.1:${server.address().port}`;
   const chat = createModelClient({
-    baseUrl: `http://127.0.0.1:${server.address().port}`,
+    baseUrl,
     model: 'test-model',
   });
-  return {chat, requests};
+  return {chat, requests, baseUrl};
 }
 
 function chatReply(message) {
@@ -73,10 +75,23 @@ test('rejects an incomplete model reply', async t => {
   await assert.rejects(planStudy('Help me study.', chat), /incomplete or malformed/);
 });
 
-test('rejects an unsolicited tool call in the Week 11 workflow', async t => {
+test('rejects an unsolicited tool call in the direct-answer workflow', async t => {
   const {chat} = await serveChat(t, chatReply({
     content: '',
     tool_calls: [{function: {name: 'list_assignments', arguments: {}}}],
   }));
   await assert.rejects(planStudy('What is due?', chat), /usable study-planning answer/);
+});
+
+test('reports a slow model request as a timeout', async t => {
+  const {baseUrl} = await serveChat(t, {
+    ...chatReply({content: 'Late answer'}), delayMs: 200,
+  });
+  const chat = createModelClient({baseUrl, timeoutMs: 50});
+  await assert.rejects(planStudy('Help me study.', chat), /took too long to answer/);
+});
+
+test('reports an unavailable local model server', async () => {
+  const chat = createModelClient({baseUrl: 'http://127.0.0.1:1'});
+  await assert.rejects(planStudy('Help me study.', chat), /Could not reach Ollama/);
 });

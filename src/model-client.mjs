@@ -1,17 +1,25 @@
 export function createModelClient({
   baseUrl = process.env.OLLAMA_URL || 'http://127.0.0.1:11434',
   model = process.env.LLM_MODEL || 'qwen3:4b',
+  timeoutMs = 120_000,
 } = {}) {
-  return async function complete(messages, tools = []) {
+  return async function complete(messages, tools = [], {format, temperature} = {}) {
     let response;
     try {
       response = await fetch(new URL('/api/chat', baseUrl), {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({model, messages, tools, stream: false, think: false}),
-        signal: AbortSignal.timeout(60_000),
+        body: JSON.stringify({
+          model, messages, tools, stream: false, think: false,
+          ...(format ? {format} : {}),
+          ...(temperature === undefined ? {} : {options: {temperature}}),
+        }),
+        signal: AbortSignal.timeout(timeoutMs),
       });
     } catch (error) {
+      if (error.name === 'TimeoutError') {
+        throw new Error('Ollama took too long to answer. Try a shorter request or a smaller model.', {cause: error});
+      }
       throw new Error('Could not reach Ollama. Check that it is running and OLLAMA_URL is correct.', {cause: error});
     }
     if (!response.ok) {

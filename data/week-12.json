@@ -1,0 +1,14 @@
+{
+  "start_date": "2026-11-22",
+  "end_date": "2026-11-24",
+  "assignments": [
+    {"id": "ai-core", "title": "AI core functionality", "course": "CSS4007", "deadline": "2026-11-22", "estimated_minutes": 90},
+    {"id": "devops-lab", "title": "DevOps lab review", "course": "DevOps", "deadline": "2026-11-23", "estimated_minutes": 60},
+    {"id": "ai-reading", "title": "Read tool-calling notes", "course": "CSS4007", "deadline": "2026-11-24", "estimated_minutes": 60}
+  ],
+  "availability": [
+    {"date": "2026-11-22", "minutes": 90},
+    {"date": "2026-11-23", "minutes": 60},
+    {"date": "2026-11-24", "minutes": 60}
+  ]
+}

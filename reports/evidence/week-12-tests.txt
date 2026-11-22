@@ -1,0 +1,44 @@
+✔ structured model request uses the schema, supplied data, and zero temperature (68.6101ms)
+✔ work that cannot fit remains visible and missing availability is not assumed (1.227ms)
+✔ deadline is inclusive but no session may occur after it (1.0443ms)
+✔ multiple sessions share the daily capacity rather than each getting its own budget (0.3889ms)
+✔ multiple sessions cannot exceed an assignment estimate (0.347ms)
+✔ unknown dates and explicit zero availability both prevent scheduling (0.4358ms)
+✔ rejects invented assignments and sessions outside the requested range (0.4386ms)
+✔ rejects malformed model output and unexpected tools (15.8976ms)
+✔ validates session dates, block lengths, and extra fields (0.663ms)
+✔ rejects duplicate records to prevent double-counted tasks or availability (0.2981ms)
+✔ validates study data before contacting the model (0.5414ms)
+✔ handles leap days, month boundaries, and the maximum planning window (0.391ms)
+✔ empty and past-deadline workloads produce honest remaining totals (0.4491ms)
+✔ CLI validates the example data without a model and prints usage errors (294.3421ms)
+✔ CLI renders a validated model schedule and can emit machine-readable JSON (300.2425ms)
+✔ CLI does not display a model schedule that violates the daily budget (124.4568ms)
+✔ structured output accepts schema and rejects malformed output (1.8235ms)
+✔ tool invocation and invalid arguments (0.7299ms)
+✔ unauthorized and unapproved actions never execute (0.4944ms)
+✔ prompt injection cannot grant tool permissions (0.568ms)
+✔ execution stops at limit (0.5354ms)
+✔ repeated failures stop at retry budget (0.4215ms)
+✔ goal completion stops immediately (0.2798ms)
+✔ grading reproduces supplied example and boundary coefficients (0.5753ms)
+✔ grading rejects invalid scores, weeks, and unexplained override (0.3631ms)
+✔ proposal/report validation rejects headings-only and TODO templates (2.7498ms)
+✔ sends system and user messages to Ollama and returns the answer (53.8603ms)
+✔ rejects blank requests before calling the model (0.6458ms)
+✔ rejects oversized requests before calling the model (0.3012ms)
+✔ rejects an empty model answer (11.3521ms)
+✔ reports the missing model with a setup hint (9.4693ms)
+✔ handles invalid JSON from Ollama (7.5577ms)
+✔ rejects an incomplete model reply (9.0556ms)
+✔ rejects an unsolicited tool call in the direct-answer workflow (9.7081ms)
+✔ reports a slow model request as a timeout (62.106ms)
+✔ reports an unavailable local model server (0.7049ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1002.6432
