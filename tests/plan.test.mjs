@@ -7,7 +7,7 @@ import {promisify} from 'node:util';
 import test from 'node:test';
 import {createModelClient} from '../src/model-client.mjs';
 import {createStudyPlan, formatStudyPlan} from '../src/study-planner.mjs';
-import {datesInRange, planSchema, validatePlan, validateStudyData} from '../src/plan-validation.mjs';
+import {allocateStudySessions, datesInRange, validatePlan, validateStudyData} from '../src/plan-validation.mjs';
 
 const run = promisify(execFile);
 const root = new URL('../', import.meta.url);
@@ -22,7 +22,7 @@ const fullPlan = {sessions: [
 const oneSession = session => ({sessions: [session]});
 const reading = {assignment_id: 'ai-reading', date: '2026-11-24', minutes: 30};
 
-async function servePlan(t, text = JSON.stringify(fullPlan)) {
+async function servePlan(t, text = JSON.stringify({assignment_order: sample.assignments.map(item => item.id)})) {
   const requests = [];
   const server = createServer(async (request, response) => {
     const chunks = [];
@@ -45,8 +45,11 @@ test('structured model request uses the schema, supplied data, and zero temperat
     estimated_minutes: 210, available_minutes: 210, scheduled_minutes: 210, remaining_minutes: 0,
   });
   assert.deepEqual(plan.remaining, []);
-  assert.deepEqual(requests[0].format, planSchema);
+  assert.deepEqual(requests[0].format.properties.assignment_order.items.enum, ['ai-core', 'devops-lab', 'ai-reading']);
+  assert.equal(requests[0].format.properties.assignment_order.minItems, 3);
+  assert.equal(requests[0].format.additionalProperties, false);
   assert.deepEqual(requests[0].options, {temperature: 0});
+  assert.equal(requests[0].think, false);
   assert.deepEqual(JSON.parse(requests[0].messages[1].content), sample);
   assert.deepEqual(requests[0].tools, []);
 });
@@ -94,7 +97,7 @@ test('rejects invented assignments and sessions outside the requested range', ()
 
 test('rejects malformed model output and unexpected tools', async t => {
   const {chat} = await servePlan(t, '{broken');
-  await assert.rejects(createStudyPlan(sample, chat), /invalid plan JSON/);
+  await assert.rejects(createStudyPlan(sample, chat), /invalid priority JSON/);
   await assert.rejects(createStudyPlan(sample, async () => ({text: '{}', toolCalls: [{name: 'invented'}]})), /requested a tool/);
   for (const plan of [null, [], {}, {sessions: 'text'}, {...fullPlan, summary: 'I finished everything'}]) {
     assert.throws(() => validatePlan(plan, sample));
@@ -162,12 +165,50 @@ test('CLI renders a validated model schedule and can emit machine-readable JSON'
   assert.equal(JSON.parse(jsonResult.stdout).totals.scheduled_minutes, 210);
 });
 
-test('CLI does not display a model schedule that violates the daily budget', async t => {
-  const {baseUrl} = await servePlan(t, JSON.stringify({sessions: [
-    {...reading, date: '2026-11-23', minutes: 60},
-    {assignment_id: 'devops-lab', date: '2026-11-23', minutes: 60},
-  ]}));
+test('CLI does not display a schedule when the model invents an assignment', async t => {
+  const {baseUrl} = await servePlan(t, JSON.stringify({assignment_order: ['invented', 'devops-lab', 'ai-reading']}));
   await assert.rejects(run(process.execPath, ['src/cli.mjs', '--plan', 'data/week-12.json'], {
     cwd: root, env: {...process.env, OLLAMA_URL: baseUrl},
-  }), error => error.code === 1 && error.stdout === '' && /exceed available minutes/.test(error.stderr));
+  }), error => error.code === 1 && error.stdout === '' && /unknown assignment ID/.test(error.stderr));
+});
+
+test('allocator uses model priority for equal deadlines and protects earlier deadlines', () => {
+  const data = {
+    start_date: '2026-11-22', end_date: '2026-11-23',
+    assignments: [
+      {id: 'a', title: 'A', course: 'AI', deadline: '2026-11-22', estimated_minutes: 60},
+      {id: 'b', title: 'B', course: 'AI', deadline: '2026-11-22', estimated_minutes: 60},
+      {id: 'later', title: 'Later', course: 'AI', deadline: '2026-11-23', estimated_minutes: 60},
+    ],
+    availability: [{date: '2026-11-22', minutes: 60}, {date: '2026-11-23', minutes: 60}],
+  };
+  const plan = allocateStudySessions(data, ['later', 'b', 'a']);
+  assert.deepEqual(plan.sessions, [
+    {assignment_id: 'b', date: '2026-11-22', minutes: 60},
+    {assignment_id: 'later', date: '2026-11-23', minutes: 60},
+  ]);
+  assert.deepEqual(plan.remaining, [{assignment_id: 'a', minutes: 60}]);
+  assert.equal(data.availability[0].minutes, 60);
+});
+
+test('model priority must list all known assignments exactly once', () => {
+  for (const order of [null, [], ['ai-core', 'devops-lab'], ['ai-core', 'ai-core', 'ai-reading']]) {
+    assert.throws(() => allocateStudySessions(sample, order), /Priority order/);
+  }
+});
+
+test('allocator supports the full daily budget throughout a 31-day range', () => {
+  const data = {
+    start_date: '2026-12-01', end_date: '2026-12-31',
+    assignments: [{id: 'large', title: 'Large', course: 'Example', deadline: '2026-12-31', estimated_minutes: 44640}],
+    availability: datesInRange('2026-12-01', '2026-12-31').map(date => ({date, minutes: 1440})),
+  };
+  const plan = allocateStudySessions(data, ['large']);
+  assert.equal(plan.sessions.length, 744);
+  assert.equal(plan.totals.remaining_minutes, 0);
+});
+
+test('an empty workload does not need a model call', async () => {
+  const plan = await createStudyPlan({...sample, assignments: []}, () => assert.fail('Empty workload reached the model'));
+  assert.equal(plan.totals.scheduled_minutes, 0);
 });

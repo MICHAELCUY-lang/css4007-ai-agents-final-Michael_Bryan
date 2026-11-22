@@ -1,0 +1,87 @@
+{
+  "checked_at": "2026-11-22T14:17:26.150Z",
+  "model": "qwen3:0.6b",
+  "results": [
+    {
+      "name": "general-question",
+      "status": "passed",
+      "duration_ms": 1897,
+      "output": "Untuk membagi waktu belajar selama 60 menit secara fokus, pilih 2-3 tugas yang memperluas waktu sekaligus memperluas fokus. Contoh:  \n- **Pertama 10 menit** untuk menghabiskan waktu belajar atau refleksi.  \n- **Selanjutnya 10 menit** untuk mempelajari satu hal (misalnya, teori).  \n- **Lainnya 20 menit** untuk menghabiskan waktu untuk mempelajari keterampilan baru.  \n\nJika ada detail yang diperlukan, kalau belum ada, saya bisa menambahkannya."
+    },
+    {
+      "name": "week-12",
+      "status": "passed",
+      "duration_ms": 269,
+      "output": {
+        "start_date": "2026-11-22",
+        "end_date": "2026-11-24",
+        "sessions": [
+          {
+            "assignment_id": "ai-core",
+            "date": "2026-11-22",
+            "minutes": 60
+          },
+          {
+            "assignment_id": "ai-core",
+            "date": "2026-11-22",
+            "minutes": 30
+          },
+          {
+            "assignment_id": "devops-lab",
+            "date": "2026-11-23",
+            "minutes": 60
+          },
+          {
+            "assignment_id": "ai-reading",
+            "date": "2026-11-24",
+            "minutes": 60
+          }
+        ],
+        "totals": {
+          "estimated_minutes": 210,
+          "available_minutes": 210,
+          "scheduled_minutes": 210,
+          "remaining_minutes": 0
+        },
+        "remaining": [],
+        "unknown_dates": []
+      }
+    },
+    {
+      "name": "over-capacity",
+      "status": "passed",
+      "duration_ms": 242,
+      "output": {
+        "start_date": "2026-11-22",
+        "end_date": "2026-11-24",
+        "sessions": [
+          {
+            "assignment_id": "ai-report",
+            "date": "2026-11-22",
+            "minutes": 30
+          }
+        ],
+        "totals": {
+          "estimated_minutes": 150,
+          "available_minutes": 30,
+          "scheduled_minutes": 30,
+          "remaining_minutes": 120
+        },
+        "remaining": [
+          {
+            "assignment_id": "ai-report",
+            "minutes": 60
+          },
+          {
+            "assignment_id": "reading",
+            "minutes": 60
+          }
+        ],
+        "unknown_dates": [
+          "2026-11-24"
+        ]
+      }
+    }
+  ],
+  "ollama_version": "0.40.17"
+}

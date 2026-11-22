@@ -1,0 +1,59 @@
+{
+  "checked_at": "2026-11-22T14:12:49.814Z",
+  "model": "qwen3:0.6b",
+  "results": [
+    {
+      "name": "general-question",
+      "status": "passed",
+      "duration_ms": 13371,
+      "output": "Untuk membagi waktu belajar selama 60 menit secara efisien, dapat memperbaiki:\n\n1. **Fokus**: Tukar 60 menit menjadi 30 menit setiap jam.\n2. **Pengaturan**:\n   - Kompres: Jika 60 menit tidak diperlukan, mungkin memulai sebelum 30 menit.\n   - Kompres: Jika diperlukan, pastikan waktu yang diberi lebih singkat.\n3. **Penggunaan waktu**: Hindari bermain, membaca, atau berolahraga dalam waktu tersebut.\n\nJika ada detail yang diperlukan, beri tahu!"
+    },
+    {
+      "name": "week-12",
+      "status": "failed",
+      "duration_ms": 13739,
+      "error": "Expected 210 scheduled minutes for this fixture; received 129.",
+      "output": {
+        "start_date": "2026-11-22",
+        "end_date": "2026-11-24",
+        "sessions": [
+          {
+            "assignment_id": "ai-core",
+            "date": "2026-11-22",
+            "minutes": 9
+          },
+          {
+            "assignment_id": "devops-lab",
+            "date": "2026-11-23",
+            "minutes": 60
+          },
+          {
+            "assignment_id": "ai-reading",
+            "date": "2026-11-24",
+            "minutes": 60
+          }
+        ],
+        "totals": {
+          "estimated_minutes": 210,
+          "available_minutes": 210,
+          "scheduled_minutes": 129,
+          "remaining_minutes": 81
+        },
+        "remaining": [
+          {
+            "assignment_id": "ai-core",
+            "minutes": 81
+          }
+        ],
+        "unknown_dates": []
+      }
+    },
+    {
+      "name": "over-capacity",
+      "status": "failed",
+      "duration_ms": 959,
+      "error": "Session for ai-report is after its deadline."
+    }
+  ],
+  "ollama_version": "0.40.17"
+}

@@ -7,7 +7,7 @@ const help = `Study Planner Agent
   node src/cli.mjs --plan data/week-12.json [--json]
   node src/cli.mjs --check data/week-12.json
 
---plan creates a model-generated, validated schedule.
+--plan creates an AI-prioritized, validated schedule.
 --check validates the input file without contacting a model.
 Dates are inclusive local calendar days; availability is a daily minute budget.`;
 

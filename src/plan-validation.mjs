@@ -1,23 +1,14 @@
 const maxDays = 31;
 
-export const planSchema = {
+export const prioritySchema = {
   type: 'object',
   additionalProperties: false,
-  required: ['sessions'],
+  required: ['assignment_order'],
   properties: {
-    sessions: {
+    assignment_order: {
       type: 'array',
-      maxItems: 500,
-      items: {
-        type: 'object',
-        additionalProperties: false,
-        required: ['assignment_id', 'date', 'minutes'],
-        properties: {
-          assignment_id: {type: 'string'},
-          date: {type: 'string', pattern: '^\\d{4}-\\d{2}-\\d{2}$'},
-          minutes: {type: 'integer', minimum: 1, maximum: 60},
-        },
-      },
+      maxItems: 100,
+      items: {type: 'string'},
     },
   },
 };
@@ -95,8 +86,8 @@ export function validatePlan(plan, data) {
   validateStudyData(data);
   requireObject(plan, 'Plan');
   if (Object.keys(plan).some(key => key !== 'sessions')
-      || !Array.isArray(plan.sessions) || plan.sessions.length > 500) {
-    throw new Error('Plan must contain only a sessions array with at most 500 entries.');
+      || !Array.isArray(plan.sessions) || plan.sessions.length > 1000) {
+    throw new Error('Plan must contain only a sessions array with at most 1,000 entries.');
   }
   const assignments = new Map(data.assignments.map(item => [item.id, item]));
   const dailyLimits = new Map(data.availability.map(item => [item.date, item.minutes]));
@@ -148,4 +139,34 @@ export function validatePlan(plan, data) {
     remaining,
     unknown_dates: datesInRange(data.start_date, data.end_date).filter(date => !dailyLimits.has(date)),
   };
+}
+
+export function allocateStudySessions(data, order) {
+  validateStudyData(data);
+  const knownIds = new Set(data.assignments.map(item => item.id));
+  if (!Array.isArray(order) || order.some(id => typeof id !== 'string' || !knownIds.has(id))) {
+    throw new Error('Priority order contains an unknown assignment ID.');
+  }
+  if (order.length !== knownIds.size || new Set(order).size !== order.length) {
+    throw new Error('Priority order must include every assignment ID exactly once.');
+  }
+  const rank = new Map(order.map((id, index) => [id, index]));
+  const assignments = [...data.assignments].sort((a, b) =>
+    a.deadline.localeCompare(b.deadline) || rank.get(a.id) - rank.get(b.id));
+  const days = data.availability.map(item => ({...item})).sort((a, b) => a.date.localeCompare(b.date));
+  const sessions = [];
+  for (const assignment of assignments) {
+    let remaining = assignment.estimated_minutes;
+    for (const day of days) {
+      if (day.date > assignment.deadline) break;
+      while (remaining > 0 && day.minutes > 0) {
+        const minutes = Math.min(60, remaining, day.minutes);
+        sessions.push({assignment_id: assignment.id, date: day.date, minutes});
+        remaining -= minutes;
+        day.minutes -= minutes;
+      }
+      if (!remaining) break;
+    }
+  }
+  return validatePlan({sessions}, data);
 }

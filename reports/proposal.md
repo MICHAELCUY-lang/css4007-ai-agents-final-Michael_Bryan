@@ -44,6 +44,8 @@ Both tools read local data. The program will validate dates, reject calls outsid
 
 Use Qwen3 4B through Ollama's local chat API. Qwen3 supports tool calling, and the local setup lets the prototype run without an API key. Use synthetic assignment and availability data in development and the demo.
 
+Week 12 update (November 22): the live checks used `qwen3:0.6b` because the 4B download repeatedly stalled. The 4B model remains configurable but was not tested in this milestone.
+
 ## Architecture
 
 ```mermaid
@@ -55,6 +57,8 @@ flowchart TD
     D --> E[Record tool outcome]
     C -->|Final answer| F[Validate and display response]
 ```
+
+Week 12 implementation: the model returns a validated assignment priority list. Application code allocates sessions by earliest deadline, uses model priority for tied deadlines, and validates the resulting dates and minute totals. Initial live failures with model-generated sessions motivated this change. Registering and executing model-selected data tools remains Week 13 work.
 
 ## Example Requests
 

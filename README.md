@@ -2,7 +2,7 @@
 
 ## Study Planner Agent
 
-The Week 12 application answers study questions and generates schedules from assignment deadlines, workload estimates, and daily availability. It validates each model-generated session and calculates unfinished work itself. The project targets Level C; model-selected tools are the next milestone. See the [proposal](reports/proposal.md).
+The Week 12 application answers study questions and generates schedules from assignment deadlines, workload estimates, and daily availability. The AI proposes task priorities; the program allocates study sessions, checks the constraints, and calculates unfinished work. Earlier deadlines take precedence, and AI priority breaks ties. The project targets Level C; model-selected tools are the next milestone. See the [proposal](reports/proposal.md).
 
 Install [Ollama](https://ollama.com/download) and use Node.js 22 or later. Start Ollama, then run these commands from the repository root.
 
@@ -17,19 +17,19 @@ node --test
 
 On this Windows checkout, `./scripts/start-ollama.ps1` also supports a standalone Ollama binary in `.private/ollama/ollama.exe`; it starts the server in the background and keeps models in `.private/models`. Use the installed `ollama` command on other computers. The portable binaries and models are ignored by Git and are not included when cloning the repository.
 
-To change the model or endpoint, copy `.env.example` to `.env`, edit it, and run `node --env-file=.env src/cli.mjs "Your study question"`.
+To change the model or endpoint, copy `.env.example` to `.env`, edit it, and run `node --env-file=.env src/cli.mjs "Your study question"`. For a smaller download, pull `qwen3:0.6b` and set `LLM_MODEL=qwen3:0.6b` in `.env`; include `--env-file=.env` when running either the CLI or live-check script. The default remains `qwen3:4b`.
 
 ### Structured schedules
 
-`--check` validates the file without using a model. `--plan` sends the validated data to Ollama with a [JSON schema](https://docs.ollama.com/capabilities/structured-outputs), then checks the returned schedule against the input. Invalid schedules produce an error and are not displayed as accepted plans. The program derives totals and unscheduled minutes from the sessions, rather than accepting model-generated totals.
+`--check` validates the file without using a model. `--plan` sends validated data to Ollama with a [JSON schema](https://docs.ollama.com/capabilities/structured-outputs) for a priority list. The returned list must contain each known assignment ID exactly once. The program allocates sessions by deadline and AI priority, then validates the schedule against the input. Invalid model proposals produce an error. The program derives totals and unscheduled minutes from the sessions. Empty workloads do not need a model call.
 
-The [example data](data/README.md) is synthetic. Edit the JSON to enter your own assignments and available minutes. The date range is inclusive and limited to 31 days. Deadlines mean the end of the named local calendar day. A missing availability day is unknown and cannot be used; zero explicitly means no time. Sessions use daily minute budgets, without times of day or break tracking. Remaining work is reported even if a model leaves usable time unallocated; the application does not guarantee an optimal schedule. Direct study advice is free text and is not checked as a schedule.
+The [example data](data/README.md) is synthetic. Edit the JSON to enter your own assignments and available minutes. The date range is inclusive and limited to 31 days. Deadlines mean the end of the named local calendar day. A missing availability day is unknown and cannot be used; zero explicitly means no time. Sessions are at most 60 minutes and use daily budgets, without times of day or break tracking. The allocator uses the earliest known time before each task's deadline; it does not model personal preferences, prerequisites, or breaks. Direct study advice is free text and is not checked as a schedule.
 
 ### Verification
 
-`node --test` runs repeatable application tests with simulated model responses, plus the inherited starter tests. For real-model evidence, start Ollama, pull the model, then run `node scripts/live-check.mjs`. This checks one general question and both schedule examples, and writes the actual outputs, validation results, model name, server version, and timings to `reports/evidence/week-12-live.json`. The live check replaces that evidence file on each run.
+`node --test` runs repeatable application tests with simulated model responses, plus the inherited starter tests. For real-model evidence, start Ollama, pull the model, then run `node scripts/live-check.mjs` (or `node --env-file=.env scripts/live-check.mjs`). This checks one general question for a nonempty answer and both schedule examples against expected totals. It writes actual outputs, validation results, model name, server version, and timings to `reports/evidence/week-12-live.json`, replacing that file on each run. The Week 12 live run used `qwen3:0.6b`; the default 4B model was not tested in that run. The [initial live failures](reports/evidence/week-12-live-initial.json) explain why session allocation moved into application code.
 
-The actual implementation date and results are recorded in [Week 12](reports/week-12.md). Codex assisted with the proposal, CLI, model adapter, schedule validation, example data, tests, and documentation.
+The actual implementation date and results are recorded in [Week 12](reports/week-12.md). See [the current architecture](docs/architecture.md) for the request flow, file responsibilities, and scheduling examples. Codex assisted with the proposal, CLI, model adapter, schedule validation, example data, tests, and documentation.
 
 **CSS 4007 — Artificial Intelligence · Individual project · Your choice of topic**
 
